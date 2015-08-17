@@ -36,10 +36,10 @@ public class SynWrite implements ActionListener {
     }
 
     private JMenuBar menuBar;
-    private JMenu file, edit;
+    private JMenu file, edit, format;
     private JMenuItem fileNew, fileOpen, fileSave, fileSaveAs, fileExit;
-    private JMenuItem editCopy, editPaste, editCut, editSelectAll, editUndo,
-            editRedo;
+    private JMenuItem editCopy, editPaste, editCut, editSelectAll, editUndo, editRedo;
+    private JMenuItem formatFont, formatFontSize;
     private JFrame window;
     private JTextArea textArea;
     private JScrollPane scrollPane;
@@ -72,6 +72,7 @@ public class SynWrite implements ActionListener {
         menuBar = new JMenuBar();
         menuBar.add(createFile());
         menuBar.add(createEdit());
+        menuBar.add(createFormat());
 
         return menuBar;
     }
@@ -149,6 +150,19 @@ public class SynWrite implements ActionListener {
         edit.add(editCut);
         edit.add(editPaste);
         return edit;
+    }
+    
+    public JMenu createFormat() {
+        format = new JMenu("Format");
+        formatFont = new JMenuItem("Font");
+        formatFont.addActionListener(this);
+        formatFontSize = new JMenuItem("Font Size");
+        formatFontSize.addActionListener(this);
+        
+        format.add(formatFont);
+        format.add(formatFontSize);
+        
+        return format;
     }
 
     private void saveFile(File filename) {
@@ -258,10 +272,26 @@ public class SynWrite implements ActionListener {
             textArea.paste();
         } else if (event.getSource() == editCut) {
             textArea.cut();
+        } else if (event.getSource() == formatFont) {
+            String changedFont = JOptionPane.showInputDialog("Input a font");
+            changeFont(changedFont);
+        } else if (event.getSource() == formatFontSize) {
+            String changedFontSize = JOptionPane.showInputDialog("Input a font size");
+            changeFontSize(Integer.parseInt(changedFontSize));
         }
     }
 
     public void setTextArea(JTextArea text) {
         textArea = text;
+    }
+    
+    public void changeFont(String f) {
+        textFont = new Font("f", 0, 12);
+        textArea.setFont(textFont);
+    }
+    
+    public void changeFontSize(int size) {
+        textFont = new Font(textFont.getFontName(), 0, size);
+        textArea.setFont(textFont);
     }
 }
