@@ -277,7 +277,12 @@ public class SynWrite implements ActionListener {
             changeFont(changedFont);
         } else if (event.getSource() == formatFontSize) {
             String changedFontSize = JOptionPane.showInputDialog("Input a font size");
-            changeFontSize(Integer.parseInt(changedFontSize));
+            try {
+                changeFontSize(Integer.parseInt(changedFontSize));  
+            } catch (NumberFormatException n) {
+                JOptionPane.showMessageDialog(window, "Not a valid font size");
+                n.printStackTrace();
+            }
         }
     }
 
