@@ -1,5 +1,4 @@
 package notepadextended;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Point;
@@ -16,12 +15,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.BadLocationException;
 
-// Inspired from http://stackoverflow.com/questions/10873748/how-to-show-autocomplete-as-i-type-in-jtextarea
+// code taken from http://stackoverflow.com/questions/10873748/how-to-show-autocomplete-as-i-type-in-jtextarea
 
-public class SynWrite extends Javapad{
-    
+public class AutocompleteExample {
+
     public class SuggestionPanel {
         private JList list;
         private JPopupMenu popupMenu;
@@ -211,4 +212,26 @@ public class SynWrite extends Javapad{
         frame.pack();
         frame.setVisible(true);
     }
+
+    public static void main(String[] args) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                new AutocompleteExample().initUI();
+            }
+        });
+    }
+
 }
