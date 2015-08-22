@@ -29,7 +29,7 @@ import javax.swing.undo.UndoManager;
 //base operations inspired from http://codereview.stackexchange.com/questions/51175/simple-text-editor-classand
 //http://forum.codecall.net/topic/49721-simple-text-editor/
 
-public class Javapad implements ActionListener {
+public class Javapad{
 
     public static void main(String[] args) {
         new Javapad();
@@ -284,6 +284,10 @@ public class Javapad implements ActionListener {
                 n.printStackTrace();
             }
         }
+    }
+    
+    public JTextArea getTextArea() {
+        return textArea;
     }
 
     public void setTextArea(JTextArea text) {

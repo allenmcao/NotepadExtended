@@ -18,7 +18,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 
-// Inspired from http://stackoverflow.com/questions/10873748/how-to-show-autocomplete-as-i-type-in-jtextarea
+// Inspired from http://stackoverflow.com/questions/10873748/how-to-show-autocomplete-as-i-type-in-jtextArea
 
 public class SynWrite extends Javapad{
     
@@ -28,7 +28,7 @@ public class SynWrite extends Javapad{
         private String subWord;
         private final int insertionPosition;
 
-        public SuggestionPanel(JTextArea textarea, int position, String subWord, Point location) {
+        public SuggestionPanel(JTextArea ta, int position, String subWord, Point location) {
             this.insertionPosition = position;
             this.subWord = subWord;
             popupMenu = new JPopupMenu();
@@ -36,7 +36,7 @@ public class SynWrite extends Javapad{
             popupMenu.setOpaque(false);
             popupMenu.setBorder(null);
             popupMenu.add(list = createSuggestionList(position, subWord), BorderLayout.CENTER);
-            popupMenu.show(textarea, location.x, textarea.getBaseline(0, 0) + location.y);
+            popupMenu.show(ta, location.x, ta.getBaseline(0, 0) + location.y);
         }
 
         public void hide() {
@@ -70,7 +70,7 @@ public class SynWrite extends Javapad{
             if (list.getSelectedValue() != null) {
                 try {
                     final String selectedSuggestion = ((String) list.getSelectedValue()).substring(subWord.length());
-                    textarea.getDocument().insertString(insertionPosition, selectedSuggestion, null);
+                    getTextArea().getDocument().insertString(insertionPosition, selectedSuggestion, null);
                     return true;
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
@@ -91,19 +91,19 @@ public class SynWrite extends Javapad{
         }
 
         private void selectIndex(int index) {
-            final int position = textarea.getCaretPosition();
+            final int position = getTextArea().getCaretPosition();
             list.setSelectedIndex(index);
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    textarea.setCaretPosition(position);
+                    getTextArea().setCaretPosition(position);
                 };
             });
         }
     }
 
     private SuggestionPanel suggestion;
-    private JTextArea textarea;
+ 
 
     protected void showSuggestionLater() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -116,16 +116,17 @@ public class SynWrite extends Javapad{
     }
 
     protected void showSuggestion() {
+        JTextArea textArea = getTextArea();
         hideSuggestion();
-        final int position = textarea.getCaretPosition();
+        final int position = textArea.getCaretPosition();
         Point location;
         try {
-            location = textarea.modelToView(position).getLocation();
+            location = textArea.modelToView(position).getLocation();
         } catch (BadLocationException e2) {
             e2.printStackTrace();
             return;
         }
-        String text = textarea.getText();
+        String text = textArea.getText();
         int start = Math.max(0, position - 1);
         while (start > 0) {
             if (!Character.isWhitespace(text.charAt(start))) {
@@ -142,11 +143,11 @@ public class SynWrite extends Javapad{
         if (subWord.length() < 2) {
             return;
         }
-        suggestion = new SuggestionPanel(textarea, position, subWord, location);
+        suggestion = new SuggestionPanel(textArea, position, subWord, location);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                textarea.requestFocusInWindow();
+                textArea.requestFocusInWindow();
             }
         });
     }
@@ -157,14 +158,10 @@ public class SynWrite extends Javapad{
         }
     }
 
-    protected void initUI() {
-        final JFrame frame = new JFrame();
-        frame.setTitle("Test frame on two screens");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JPanel panel = new JPanel(new BorderLayout());
-        textarea = new JTextArea(24, 80);
-        textarea.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 1));
-        textarea.addKeyListener(new KeyListener() {
+    @Override
+    public JTextArea createTextArea() {
+        JTextArea textArea = getTextArea();
+        textArea.addKeyListener(new KeyListener() {
 
             @Override
             public void keyTyped(KeyEvent e) {
@@ -172,12 +169,12 @@ public class SynWrite extends Javapad{
                     if (suggestion != null) {
                         if (suggestion.insertSelection()) {
                             e.consume();
-                            final int position = textarea.getCaretPosition();
+                            final int position = textArea.getCaretPosition();
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        textarea.getDocument().remove(position - 1, 1);
+                                        textArea.getDocument().remove(position - 1, 1);
                                     } catch (BadLocationException e) {
                                         e.printStackTrace();
                                     }
@@ -206,9 +203,6 @@ public class SynWrite extends Javapad{
 
             }
         });
-        panel.add(textarea, BorderLayout.CENTER);
-        frame.add(panel);
-        frame.pack();
-        frame.setVisible(true);
+        return textArea;
     }
 }
