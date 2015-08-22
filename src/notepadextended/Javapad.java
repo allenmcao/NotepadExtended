@@ -1,17 +1,18 @@
 package notepadextended;
 
 import java.awt.BorderLayout;
-// import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -23,11 +24,13 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.border.Border;
 import javax.swing.event.UndoableEditEvent;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 
-//base operations inspired from http://codereview.stackexchange.com/questions/51175/simple-text-editor-classand
-//http://forum.codecall.net/topic/49721-simple-text-editor/
+// Base operations inspired from http://codereview.stackexchange.com/questions/51175/simple-text-editor-class
+// and http://forum.codecall.net/topic/49721-simple-text-editor/
+// Actions learned from Oracle's java.awt.Action example.
 
 public class Javapad{
 
@@ -109,16 +112,22 @@ public class Javapad{
 
     public JMenu createFile() {
         file = new JMenu("File");
-        fileNew = new JMenuItem("New");
-        fileNew.addActionListener(this);
-        fileOpen = new JMenuItem("Open");
-        fileOpen.addActionListener(this);
-        fileSave = new JMenuItem("Save");
-        fileSave.addActionListener(this);
-        fileSaveAs = new JMenuItem("SaveAs");
-        fileSaveAs.addActionListener(this);
-        fileExit = new JMenuItem("Exit");
-        fileExit.addActionListener(this);
+        
+        fileNew = new JMenuItem(new ActionNew());
+        fileNew.setIcon(null);
+        
+        fileOpen = new JMenuItem(new ActionOpen());
+        fileOpen.setIcon(null);
+        
+        fileSave = new JMenuItem(new ActionSave());
+        fileSave.setIcon(null);
+        
+        fileSaveAs = new JMenuItem(new ActionSaveAs());
+        fileSaveAs.setIcon(null);
+        
+        fileExit = new JMenuItem(new ActionExit());
+        fileExit.setIcon(null);
+        
         file.add(fileNew);
         file.add(fileOpen);
         file.add(fileSave);
@@ -129,20 +138,23 @@ public class Javapad{
 
     public JMenu createEdit() {
         edit = new JMenu("Edit");
-        editUndo = new JMenuItem("Undo");
-        editUndo.addActionListener(this);
+        
+        editUndo = new JMenuItem(new ActionUndo());
+        editUndo.setIcon(null);    
         editUndo.setEnabled(false);
-        editRedo = new JMenuItem("Redo");
-        editRedo.addActionListener(this);
+        
+        editRedo = new JMenuItem(new ActionRedo());
+        editRedo.setIcon(null);
         editRedo.setEnabled(false);
-        editSelectAll = new JMenuItem("Select All");
-        editSelectAll.addActionListener(this);
-        editCopy = new JMenuItem("Copy");
-        editCopy.addActionListener(this);
-        editCut = new JMenuItem("Cut");
-        editCut.addActionListener(this);
-        editPaste = new JMenuItem("Paste");
-        editPaste.addActionListener(this);
+        
+        editSelectAll = new JMenuItem(new ActionSelectAll());
+        editSelectAll.setIcon(null);
+        
+        ActionMap m = textArea.getActionMap();
+        editCopy = new JMenuItem(m.get(DefaultEditorKit.cutAction));
+        editCut = new JMenuItem(m.get(DefaultEditorKit.copyAction));
+        editPaste = new JMenuItem(m.get(DefaultEditorKit.pasteAction));
+        
         edit.add(editUndo);
         edit.add(editRedo);
         edit.add(editSelectAll);
@@ -154,10 +166,12 @@ public class Javapad{
     
     public JMenu createFormat() {
         format = new JMenu("Format");
-        formatFont = new JMenuItem("Font");
-        formatFont.addActionListener(this);
-        formatFontSize = new JMenuItem("Font Size");
-        formatFontSize.addActionListener(this);
+        
+        formatFont = new JMenuItem(new ActionFont());
+        formatFont.setIcon(null);
+        
+        formatFontSize = new JMenuItem(new ActionFontSize());
+        formatFontSize.setIcon(null);
         
         format.add(formatFont);
         format.add(formatFontSize);
@@ -201,16 +215,35 @@ public class Javapad{
         }
     }
 
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        if (event.getSource() == fileNew) {
+    public class ActionNew extends AbstractAction {
+        public ActionNew() {
+            super("New");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             new Javapad();
-        } else if (event.getSource() == fileOpen) {
+        }
+    }
+    
+    public class ActionOpen extends AbstractAction {
+        public ActionOpen() {
+            super("Open");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             JFileChooser openChooser = new JFileChooser();
             openChooser.showOpenDialog(null);
             File file = openChooser.getSelectedFile();
             openingFiles(file);
-        } else if (event.getSource() == fileSave) {
+        }
+    }
+    
+    public class ActionSave extends AbstractAction {
+        public ActionSave() {
+            super("Save");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             JFileChooser saveChooser = new JFileChooser();
             File filename = saveChooser.getSelectedFile();
             if (opened == false && saved == false) {
@@ -228,7 +261,15 @@ public class Javapad{
             } else {
                 quickSave(openedFile);
             }
-        } else if (event.getSource() == fileSaveAs) {
+        }
+    }
+    
+    public class ActionSaveAs extends AbstractAction {
+        public ActionSaveAs() {
+            super("SaveAs");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             JFileChooser saveAs = new JFileChooser();
             saveAs.showSaveDialog(null);
             File filename = saveAs.getSelectedFile();
@@ -242,9 +283,25 @@ public class Javapad{
             } else {
                 saveFile(filename);
             }
-        } else if (event.getSource() == fileExit) {
+        }
+    }
+    
+    public class ActionExit extends AbstractAction {
+        public ActionExit() {
+            super("Exit");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             System.exit(0);
-        } else if (event.getSource() == editUndo) {
+        }
+    }
+    
+    public class ActionUndo extends AbstractAction {
+        public ActionUndo() {
+            super("Undo");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             try {
                 uManager.undo();
                 if (!uManager.canUndo()) {
@@ -254,7 +311,15 @@ public class Javapad{
             } catch (CannotUndoException cu) {
                 cu.printStackTrace();
             }
-        } else if (event.getSource() == editRedo) {
+        }
+    }
+    
+    public class ActionRedo extends AbstractAction {
+        public ActionRedo() {
+            super("Redo");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             try {
                 uManager.redo();
                 if (!uManager.canRedo()) {
@@ -264,18 +329,38 @@ public class Javapad{
             } catch (CannotUndoException cur) {
                 cur.printStackTrace();
             }
-        } else if (event.getSource() == editSelectAll) {
+        }
+    }
+    
+    public class ActionSelectAll extends AbstractAction {
+        public ActionSelectAll() {
+            super("Select All");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             textArea.selectAll();
-        } else if (event.getSource() == editCopy) {
-            textArea.copy();
-        } else if (event.getSource() == editPaste) {
-            textArea.paste();
-        } else if (event.getSource() == editCut) {
-            textArea.cut();
-        } else if (event.getSource() == formatFont) {
+        }
+    }
+    
+    
+    
+    public class ActionFont extends AbstractAction {
+        public ActionFont() {
+            super("Font");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             String changedFont = JOptionPane.showInputDialog("Input a font");
             changeFont(changedFont);
-        } else if (event.getSource() == formatFontSize) {
+        }
+    }
+    
+    public class ActionFontSize extends AbstractAction {
+        public ActionFontSize() {
+            super("Font Size");
+        }
+
+        public void actionPerformed(ActionEvent e) {
             String changedFontSize = JOptionPane.showInputDialog("Input a font size");
             try {
                 changeFontSize(Integer.parseInt(changedFontSize));  
